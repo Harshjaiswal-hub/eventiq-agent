@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Event Analytics Agent | Spring 2026</title>
+  <meta name="description" content="AI-powered analytics agent that analyzes technical club events, calculates performance metrics, and ranks clubs for the Spring 2026 semester." />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ══ TOPBAR ══════════════════════════════════════════════ -->
+  <header class="topbar">
+    <div class="topbar-logo">
+      <div class="logo-icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          <circle cx="12" cy="12" r="4"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">EventIQ <span class="brand-tag">Enterprise</span></div>
+        <div class="topbar-subtitle">Institutional Decision-Support Platform</div>
+      </div>
+    </div>
+
+    <div class="topbar-spacer"></div>
+
+    <div class="semester-selector-wrap" title="Academic Evaluation Period">
+      <span class="semester-icon" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+      </span>
+      <select id="semester-select" class="semester-select" aria-label="Select Evaluation Semester">
+        <option value="Spring 2026" selected>Spring 2026 (Active Evaluation)</option>
+        <option value="Fall 2025">Fall 2025 (Historical Archive)</option>
+      </select>
+    </div>
+
+    <div class="status-pill" id="system-status-container" title="Backend connection and scoring engine status">
+      <div class="status-dot"></div>
+      <span id="agent-status">Connecting…</span>
+    </div>
+
+    <div class="topbar-actions">
+      <button class="audit-btn" id="audit-btn" title="Trigger Flagship Multi-Agent Semester Audit">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        <span>Run AI Audit</span>
+      </button>
+
+      <button class="export-btn" id="export-btn" title="Export Markdown Report">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span>Export</span>
+      </button>
+
+      <button class="auth-btn" id="auth-btn" title="Sign In / User Profile">
+        <span id="auth-user-icon" class="auth-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </span>
+        <span id="auth-btn-label">Login</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ══ SIDEBAR ═════════════════════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-primary-nav">
+      <div class="nav-section-label">Primary Views</div>
+
+      <button class="nav-btn active" data-nav="dashboard">
+        <span class="nav-icon" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="9"/>
+            <rect x="14" y="3" width="7" height="5"/>
+            <rect x="14" y="12" width="7" height="9"/>
+            <rect x="3" y="16" width="7" height="5"/>
+          </svg>
+        </span>
+        <span class="nav-label">Dashboard</span>
+      </button>
+
+      <button class="nav-btn" data-nav="chat">
+        <span class="nav-icon" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </span>
+        <span class="nav-label">Ask Agent</span>
+      </button>
+
+      <button class="nav-btn" data-nav="events">
+        <span class="nav-icon" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </span>
+        <span class="nav-label">Event Timeline</span>
+      </button>
+
+      <button class="nav-btn" data-nav="report">
+        <span class="nav-icon" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+        </span>
+        <span class="nav-label">Full Report</span>
+      </button>
+
+      <button class="nav-btn" data-nav="approvals" id="nav-approvals-btn">
+        <span class="nav-icon" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="8.5" cy="7" r="4"/>
+            <polyline points="17 11 19 13 23 9"/>
+          </svg>
+        </span>
+        <span class="nav-label">Approvals</span>
+        <span id="approvals-badge" class="nav-badge" style="display:none;">0</span>
+      </button>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-secondary-section">
+      <div class="nav-section-label">Suggested Prompts</div>
+
+      <div class="prompt-list">
+        <button class="prompt-chip" data-prompt="Which club performed the best this semester?">
+          <span class="prompt-chip-bullet">›</span> Who performed best?
+        </button>
+        <button class="prompt-chip" data-prompt="Show me the full club rankings">
+          <span class="prompt-chip-bullet">›</span> Show all rankings
+        </button>
+        <button class="prompt-chip" data-prompt="Which clubs had the best attendance?">
+          <span class="prompt-chip-bullet">›</span> Attendance comparison
+        </button>
+        <button class="prompt-chip" data-prompt="What was the average feedback score across clubs?">
+          <span class="prompt-chip-bullet">›</span> Feedback analysis
+        </button>
+        <button class="prompt-chip" data-prompt="Tell me about CodeCraft">
+          <span class="prompt-chip-bullet">›</span> CodeCraft details
+        </button>
+        <button class="prompt-chip" data-prompt="Tell me about DesignLab">
+          <span class="prompt-chip-bullet">›</span> DesignLab details
+        </button>
+        <button class="prompt-chip" data-prompt="Tell me about CyberShield">
+          <span class="prompt-chip-bullet">›</span> CyberShield details
+        </button>
+        <button class="prompt-chip" data-prompt="What data was missing or incomplete?">
+          <span class="prompt-chip-bullet">›</span> Data gaps report
+        </button>
+        <button class="prompt-chip" data-prompt="What are your recommendations to improve?">
+          <span class="prompt-chip-bullet">›</span> Recommendations
+        </button>
+        <button class="prompt-chip" data-prompt="List all events from last semester">
+          <span class="prompt-chip-bullet">›</span> All events list
+        </button>
+        <button class="prompt-chip" data-prompt="Generate a full analysis report">
+          <span class="prompt-chip-bullet">›</span> Full analysis
+        </button>
+      </div>
+    </div>
+
+    <div class="data-issues-section">
+      <div class="issues-card" id="sidebar-issues-card" tabindex="0" role="button" title="Click to filter timeline for data gaps">
+        <div class="issues-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <span>Data Quality Audit</span>
+        </div>
+        <div class="issues-count" id="data-issues-badge">Scanning…</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ════════════════════════════════════════════════ -->
+  <main class="main">
+
+    <!-- ── DASHBOARD VIEW ─────────────────────────────────── -->
+    <section class="view active" id="view-dashboard">
+
+      <!-- KPI Row -->
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Total Events</span>
+            <div class="kpi-icon-wrap" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi-value" id="kpi-events">—</div>
+          <div class="kpi-meta">Across 6 technical student chapters</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Total Registrations</span>
+            <div class="kpi-icon-wrap" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi-value" id="kpi-registrations">—</div>
+          <div class="kpi-meta">Cumulative student interest log</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Avg Attendance Rate</span>
+            <div class="kpi-icon-wrap" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi-value" id="kpi-attendance">—</div>
+          <div class="kpi-meta">Turnout relative to total signups</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Avg Feedback Score</span>
+            <div class="kpi-icon-wrap" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi-value" id="kpi-feedback">—</div>
+          <div class="kpi-meta">Scale 1.0 to 5.0 (Student ratings)</div>
+        </div>
+      </div>
+
+      <!-- Main Grid -->
+      <div class="dashboard-grid" style="flex:1; min-height:0;">
+
+        <!-- Leaderboard -->
+        <div class="panel leaderboard-panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+              <span>Club Performance Leaderboard</span>
+            </div>
+            <div class="panel-header-badge">Single Source of Truth</div>
+          </div>
+          <div id="leaderboard">
+            <div class="loading-state">
+              <div class="loading-spinner"></div>
+              <span>Fetching verified metrics from backend…</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Column -->
+        <div class="dashboard-charts-column" style="display:flex; flex-direction:column; gap:16px; min-height:0;">
+
+          <!-- Bar Chart Panel -->
+          <div class="panel chart-panel" style="flex:1.15; min-height:0;">
+            <div class="panel-header">
+              <div class="panel-title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="20" x2="18" y2="10"/>
+                  <line x1="12" y1="20" x2="12" y2="4"/>
+                  <line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+                <span>Composite Score Comparison</span>
+              </div>
+              <div class="chart-tag">Scale 0–100</div>
+            </div>
+            <div class="chart-wrap" style="flex:1; min-height:0;">
+              <canvas id="bar-chart" role="img" aria-label="Bar chart displaying composite performance scores for technical clubs."></canvas>
+            </div>
+          </div>
+
+          <!-- Radar Chart Panel -->
+          <div class="panel chart-panel" style="flex:1; min-height:0;">
+            <div class="panel-header radar-panel-header">
+              <div class="panel-title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/>
+                </svg>
+                <span>Multi-Metric Radar Comparison</span>
+              </div>
+              <!-- Dynamically populated to guarantee 100% parity with backend rankings -->
+              <div class="radar-legend" id="radar-legend-container">
+                <span class="radar-legend-item"><span class="radar-dot" style="background:#7c3aed;"></span>#1 CodeCraft</span>
+                <span class="radar-legend-item"><span class="radar-dot" style="background:#dc2626;"></span>#2 CyberShield</span>
+                <span class="radar-legend-item"><span class="radar-dot" style="background:#db2777;"></span>#3 DesignLab</span>
+              </div>
+            </div>
+            <div class="chart-wrap radar-chart-wrap" style="flex:1; min-height:0; display:flex; justify-content:center; align-items:center;">
+              <canvas id="radar-chart" role="img" aria-label="Radar chart showing attendance, feedback, speaker, events, and consistency for top 3 clubs."></canvas>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── CHAT VIEW ──────────────────────────────────────── -->
+    <section class="view" id="view-chat">
+      <div class="chat-trace-bar">
+        <button id="toggle-trace-btn" class="trace-btn" title="Toggle Multi-Agent Trace Drawer">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+          <span>Multi-Agent Execution Trace</span>
+          <span id="trace-step-count" class="trace-badge">Live</span>
+        </button>
+        <div class="trace-meta-text">4 Autonomous Specialized Agents · Supervisor Orchestrated</div>
+      </div>
+      <div id="trace-viewer-drawer" class="trace-drawer" style="display:none;">
+        <div id="trace-logs-list" class="trace-list">
+          <div class="trace-empty-hint">Trigger an audit or ask a question to view live autonomous agent execution steps...</div>
+        </div>
+      </div>
+      <div class="chat-feed" id="chat-feed"></div>
+      <div class="chat-input-bar">
+        <textarea
+          id="chat-input"
+          class="chat-input"
+          placeholder="Ask anything about Spring 2026 performance, metrics, or club evaluations… (Enter to send)"
+          rows="1"
+        ></textarea>
+        <button class="send-btn" id="send-btn" title="Send Query">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- ── EVENTS VIEW ────────────────────────────────────── -->
+    <section class="view" id="view-events">
+      <div class="timeline-header">
+        <div class="panel-title" style="margin:0;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <span>Semester Event Activity Log — Spring 2026</span>
+        </div>
+        <div class="timeline-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div> CodeCraft</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#0891b2"></div> RoboTech</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#dc2626"></div> CyberShield</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#059669"></div> DataMinds</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#d97706"></div> CloudNine</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#db2777"></div> DesignLab</div>
+        </div>
+      </div>
+
+      <!-- Interactive Filter Bar (Phase 3 & Refined Search) -->
+      <div class="timeline-filter-bar">
+        <div class="timeline-chips-group">
+          <button class="filter-chip active" data-filter="all" id="filter-all-btn">
+            All Events (<span id="count-all-events">24</span>)
+          </button>
+          <button class="filter-chip filter-chip-warning" data-filter="gaps" id="filter-gaps-chip">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <span>Data Gaps Only (<span id="count-gap-events">3</span>)</span>
+          </button>
+          <button class="filter-chip" data-filter="Workshop">Workshops</button>
+          <button class="filter-chip" data-filter="Competition">Competitions</button>
+          <button class="filter-chip" data-filter="Seminar">Seminars</button>
+        </div>
+        <div class="timeline-search-box">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" id="timeline-search-input" placeholder="Search events by keyword or club…" aria-label="Search events" />
+        </div>
+      </div>
+      <div id="timeline-container">
+        <div class="loading-state">
+          <div class="loading-spinner"></div>
+          <span>Loading semester events…</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── REPORT VIEW ────────────────────────────────────── -->
+    <section class="view" id="view-report">
+      <!-- Report Archive Controls (Phase 3) -->
+      <div class="report-controls-bar">
+        <div class="report-select-group">
+          <span class="report-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span>Saved Reports Archive:</span>
+          </span>
+          <select id="saved-reports-select" class="form-select">
+            <option value="latest">Current Session Report (Live)</option>
+          </select>
+        </div>
+        <div class="report-btn-group">
+          <button id="generate-save-report-btn" class="btn btn-primary" title="Archive verified report to database">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            <span>Generate & Save to Archive</span>
+          </button>
+          <button id="print-pdf-btn" class="btn btn-secondary" title="Print or Save Institutional Report as PDF (Ctrl+P)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 6 2 18 2 18 9"/>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+              <rect x="6" y="14" width="12" height="8"/>
+            </svg>
+            <span>Print / Save PDF</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="report-section">
+        <div id="report-content">
+          <div class="loading-state">
+            <div class="loading-spinner"></div>
+            <span>Generating verified institutional report…</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="report-section">
+        <div class="panel-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+          <span>Institutional Metric Breakdown Table</span>
+        </div>
+        <div class="metrics-table-wrap">
+          <table class="metrics-table">
+            <thead>
+              <tr>
+                <th>Club</th>
+                <th>Rank</th>
+                <th>Score</th>
+                <th>Registrations</th>
+                <th>Attend. Rate</th>
+                <th>Avg Feedback</th>
+                <th>Speaker Rating</th>
+                <th>Events</th>
+                <th>Consistency</th>
+              </tr>
+            </thead>
+            <tbody id="metrics-table-body">
+              <tr><td colspan="9" style="text-align:center; color:var(--text-mute);">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── APPROVALS VIEW (HUMAN-IN-THE-LOOP & ACTION TRACKING) ── -->
+    <section class="view" id="view-approvals">
+      <div class="report-section">
+        <div class="panel-header" style="margin-bottom:8px;">
+          <div class="panel-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span>Human-in-the-Loop Recommendation Decisions</span>
+          </div>
+          <span class="panel-header-badge">Academic Governance</span>
+        </div>
+        <p class="section-intro-text">
+          The multi-agent system formulates evidence-linked improvement plans. In accordance with safety policies, consequential actions require explicit administrative approval before implementation. Track progress and record completion evidence below.
+        </p>
+
+        <!-- Recommendation Lifecycle Filter Bar (Phase 4) -->
+        <div class="rec-filter-bar">
+          <span class="filter-bar-label">Status Filter:</span>
+          <button class="rec-filter-btn active" data-rec-filter="all">All</button>
+          <button class="rec-filter-btn rec-btn-pending" data-rec-filter="pending">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span>Pending</span>
+          </button>
+          <button class="rec-filter-btn rec-btn-approved" data-rec-filter="approved">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>Approved</span>
+          </button>
+          <button class="rec-filter-btn rec-btn-completed" data-rec-filter="completed">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <circle cx="12" cy="12" r="6"/>
+              <circle cx="12" cy="12" r="2"/>
+            </svg>
+            <span>Completed</span>
+          </button>
+          <button class="rec-filter-btn rec-btn-revision" data-rec-filter="revision_requested">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="1 4 1 10 7 10"/>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+            </svg>
+            <span>Revision Req.</span>
+          </button>
+        </div>
+
+        <div id="recommendations-container" class="recommendations-list">
+          <div class="loading-state">
+            <div class="loading-spinner"></div>
+            <span>Loading recommendations from database…</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ══ MODALS ═════════════════════════════════════════════════ -->
+
+<!-- 1. Club Detail Modal (Interactive Leaderboard Inspection) -->
+<div class="modal-backdrop" id="club-detail-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="club-modal-name">
+  <div class="modal-card club-modal-card">
+    <div class="modal-header">
+      <div class="club-modal-title-group">
+        <div class="club-modal-badge" id="club-modal-badge">#1</div>
+        <div>
+          <div class="club-modal-name" id="club-modal-name">CodeCraft</div>
+          <div class="club-modal-tagline" id="club-modal-tagline">Competitive Programming & DSA</div>
+        </div>
+      </div>
+      <button class="modal-close-btn" id="close-club-modal-btn" aria-label="Close dialog">&times;</button>
+    </div>
+    
+    <div class="club-modal-body">
+      <!-- Score Banner -->
+      <div class="club-modal-score-banner">
+        <div class="score-banner-left">
+          <span class="score-banner-label">Composite Score</span>
+          <div class="score-banner-value" id="club-modal-composite">90.5<span>/100</span></div>
+        </div>
+        <div class="score-banner-right" id="club-modal-xai">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- 5-Metric Breakdown -->
+      <div class="modal-section-title">Institutional Metric Breakdown</div>
+      <div class="club-modal-metrics-grid" id="club-modal-metrics-grid">
+        <!-- Populated dynamically -->
+      </div>
+
+      <!-- Semester Events List -->
+      <div class="modal-section-title" style="margin-top:16px;">Semester Event History</div>
+      <div class="club-modal-events-list" id="club-modal-events-list">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="club-modal-ask-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span>Ask Agent About Club</span>
+      </button>
+      <button class="btn btn-primary" id="club-modal-close-action-btn">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- 2. Consequential Decision Confirmation Modal -->
+<div class="modal-backdrop" id="decision-confirm-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+  <div class="modal-card confirm-modal-card">
+    <div class="modal-header">
+      <div class="confirm-modal-title" id="confirm-modal-title">Confirm Governance Action</div>
+      <button class="modal-close-btn" id="close-confirm-modal-btn" aria-label="Close dialog">&times;</button>
+    </div>
+    <div class="modal-body" id="confirm-modal-body">
+      Are you sure you want to record this decision? This action will be permanently logged in the audit trail.
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="confirm-cancel-btn">Cancel</button>
+      <button class="btn btn-primary" id="confirm-proceed-btn">Confirm Decision</button>
+    </div>
+  </div>
+</div>
+
+<!-- 3. Login Modal (Phase 2 Security with Password Visibility Toggle) -->
+<div class="modal-backdrop" id="login-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="login-title">
+  <div class="modal-card login-modal-card">
+    <div class="modal-header">
+      <div class="modal-title" id="login-title">Institutional Sign-In</div>
+      <button id="close-login-btn" class="modal-close-btn" aria-label="Close login">&times;</button>
+    </div>
+    <div class="modal-subtitle">
+      Sign in as <strong>Administrator</strong> (admin), <strong>Evaluator</strong>, or <strong>Club Lead</strong>.
+    </div>
+    <form id="login-form" class="login-form">
+      <div class="form-group">
+        <label for="login-username" class="form-label">Username</label>
+        <input type="text" id="login-username" required autocomplete="username" placeholder="e.g. admin" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label for="login-password" class="form-label">Password</label>
+        <div class="password-input-group">
+          <input type="password" id="login-password" required autocomplete="current-password" placeholder="••••••••••••" class="form-input" />
+          <button type="button" id="toggle-password-btn" class="password-toggle-btn" title="Toggle password visibility" aria-label="Toggle password visibility">
+            <svg id="eye-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div id="login-error" class="login-error-alert" style="display:none;"></div>
+      <button type="submit" id="login-submit-btn" class="btn btn-primary btn-block">Sign In</button>
+    </form>
+    <div class="login-demo-accounts">
+      <span class="demo-label">Demo Credentials:</span>
+      <code>admin</code> · <code>evaluator</code> · <code>lead_codecraft</code>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Scripts -->
+<script src="js/data.js"></script>
+<script src="js/agent.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>

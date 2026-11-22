@@ -1,0 +1,11 @@
+{
+  "name": "eventiq-agent",
+  "version": "2.0.0",
+  "description": "Smart Event Analytics Agent — A Memory-Enabled, Tool-Using Multi-Agent System for Club Performance Analysis",
+  "scripts": {
+    "start": "python server.py",
+    "dev": "python server.py",
+    "server": "python server.py",
+    "test": "python -m unittest discover tests"
+  }
+}

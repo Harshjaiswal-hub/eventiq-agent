@@ -1,0 +1,9 @@
+# EventIQ Agent — Python Dependencies
+# All runtime dependencies are Python standard library EXCEPT waitress for production serving.
+# Python 3.11+ required.
+
+# Production WSGI server (Windows-compatible, thread-pooled, no C extensions)
+waitress==3.0.0
+
+# Development / testing only (optional)
+# pytest==8.3.3
