@@ -1229,3 +1229,102 @@ def optimize_event_plan(club_name: str, budget: float, event_type: Optional[str]
         "markdown": "\n".join(md_lines)
     }
 
+
+# ─────────────────────────────────────────────────────────────
+# 8. ENTERPRISE EVENT MANAGEMENT SAMPLE DATASET TOOLS
+# ─────────────────────────────────────────────────────────────
+
+def get_enterprise_events_summary() -> Dict[str, Any]:
+    """
+    Summarizes the 1k Event Management Sample Database across events,
+    venues, registrations, checkins, revenue, sponsors, and ratings.
+    """
+    try:
+        from backend.database import get_sample_db_connection
+        conn = get_sample_db_connection()
+        cursor = conn.cursor()
+
+        # Total counts
+        cursor.execute("SELECT count(*) FROM events")
+        total_events = cursor.fetchone()[0]
+
+        cursor.execute("SELECT count(*) FROM registrations")
+        total_registrations = cursor.fetchone()[0]
+
+        cursor.execute("SELECT count(*) FROM checkins")
+        total_checkins = cursor.fetchone()[0]
+
+        cursor.execute("SELECT sum(amount) FROM payments WHERE status = 'completed'")
+        total_revenue = cursor.fetchone()[0] or 0
+
+        cursor.execute("SELECT avg(rating) FROM feedbacks")
+        avg_feedback_rating = cursor.fetchone()[0] or 0.0
+
+        cursor.execute("SELECT count(*) FROM sponsors")
+        total_sponsors = cursor.fetchone()[0]
+
+        cursor.execute("SELECT count(*) FROM venues")
+        total_venues = cursor.fetchone()[0]
+
+        # Per-event breakdown
+        events_query = """
+            SELECT 
+                e.id, 
+                e.title, 
+                e.start_time, 
+                e.end_time, 
+                e.status,
+                v.name as venue_name,
+                v.city as venue_city,
+                COUNT(DISTINCT r.id) as registrations,
+                COUNT(DISTINCT c.id) as checkins
+            FROM events e
+            LEFT JOIN venues v ON e.venue_id = v.id
+            LEFT JOIN registrations r ON e.id = r.event_id
+            LEFT JOIN checkins c ON r.id = c.registration_id
+            GROUP BY e.id
+            ORDER BY e.start_time DESC
+        """
+        cursor.execute(events_query)
+        events_list = []
+        for row in cursor.fetchall():
+            reg_cnt = row["registrations"]
+            chk_cnt = row["checkins"]
+            chk_rate = round((chk_cnt / reg_cnt * 100.0), 1) if reg_cnt > 0 else 0.0
+            events_list.append({
+                "id": row["id"],
+                "title": row["title"],
+                "start_time": row["start_time"],
+                "end_time": row["end_time"],
+                "status": row["status"],
+                "venue": f"{row['venue_name']} ({row['venue_city']})",
+                "registrations": reg_cnt,
+                "checkins": chk_cnt,
+                "checkin_rate": chk_rate
+            })
+
+        overall_checkin_rate = round((total_checkins / total_registrations * 100.0), 1) if total_registrations > 0 else 0.0
+
+        conn.close()
+        return {
+            "status": "success",
+            "source": "event-management-sample-database-1k-en_GB-v2",
+            "summary": {
+                "total_events": total_events,
+                "total_registrations": total_registrations,
+                "total_checkins": total_checkins,
+                "overall_checkin_rate": overall_checkin_rate,
+                "total_revenue_gbp": total_revenue,
+                "avg_feedback_rating": round(avg_feedback_rating, 2),
+                "total_sponsors": total_sponsors,
+                "total_venues": total_venues
+            },
+            "events": events_list
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Failed to query enterprise event management dataset: {str(e)}"
+        }
+
+

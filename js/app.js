@@ -659,9 +659,13 @@ function drawBarChart() {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
-  const w = canvas.parentElement.clientWidth || canvas.offsetWidth || 500;
-  const h = canvas.parentElement.clientHeight || canvas.offsetHeight || 260;
-  canvas.width = w * dpr; canvas.height = h * dpr;
+  const wrap = canvas.parentElement;
+  const w = Math.max(200, wrap ? wrap.clientWidth : (canvas.offsetWidth || 500));
+  const h = Math.max(160, wrap ? wrap.clientHeight : (canvas.offsetHeight || 240));
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
   ctx.scale(dpr, dpr);
 
   const data = agent.rankings;
@@ -676,7 +680,7 @@ function drawBarChart() {
   ctx.clearRect(0, 0, w, h);
 
   // Subtle Grid lines
-  ctx.strokeStyle = 'rgba(148, 163, 184, 0.09)';
+  ctx.strokeStyle = 'rgba(100, 116, 139, 0.14)';
   ctx.lineWidth = 1;
   for (let i = 0; i <= 5; i++) {
     const y = pad.top + ch - (ch * i / 5);
@@ -722,14 +726,14 @@ function drawBarChart() {
     ctx.stroke();
 
     // Score label on top of bar
-    ctx.fillStyle = '#F8FAFC';
+    ctx.fillStyle = '#0F172A';
     ctx.font = '600 11px JetBrains Mono, monospace';
     ctx.textAlign = 'center';
     ctx.fillText(d.composite.toFixed(1), x + barW / 2, y - 6);
 
     // Club name label below axis
-    ctx.fillStyle = '#CBD5E1';
-    ctx.font = '500 11px Inter, sans-serif';
+    ctx.fillStyle = '#334155';
+    ctx.font = '600 11px Inter, sans-serif';
     ctx.fillText(d.club.name, x + barW / 2, pad.top + ch + 18);
     
     // Club icon below name
@@ -760,29 +764,28 @@ function drawRadarChart() {
   // Sync the legend dynamically with verified rankings
   updateRadarLegend();
 
-  // Responsive dimensions from container with generous padding to prevent label clipping
+  // Responsive dimensions utilizing full available width to prevent any label clipping
   const wrap = canvas.parentElement;
-  const availableWidth = wrap ? wrap.clientWidth : canvas.offsetWidth;
-  const availableHeight = wrap ? wrap.clientHeight : canvas.offsetHeight;
-  const size = Math.max(180, Math.min(availableWidth || 300, availableHeight || 240));
+  const w = Math.max(260, wrap ? wrap.clientWidth : (canvas.offsetWidth || 400));
+  const h = Math.max(180, wrap ? wrap.clientHeight : (canvas.offsetHeight || 220));
 
-  canvas.width = size * dpr;
-  canvas.height = size * dpr;
-  canvas.style.width = size + 'px';
-  canvas.style.height = size + 'px';
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
   ctx.scale(dpr, dpr);
 
-  const cx = size / 2;
-  const cy = size / 2;
-  // Radius carefully bounded at size * 0.29 so outer labels with offset +18px stay well within bounds
-  const r = size * 0.285;
+  const cx = w / 2;
+  const cy = h / 2;
+  // Radius proportioned to vertical height with ample breathing room for text labels
+  const r = Math.min(w * 0.22, h * 0.35);
   const axes = ['Attendance', 'Feedback', 'Speaker', 'Events', 'Consistency'];
   const keys = ['attendanceRate', 'avgFeedback', 'avgSpeakerRating', 'eventCount', 'consistency'];
   const maxEvents = Math.max(4, ...agent.rankings.map(d => d.metrics.eventCount || 0));
   const maxes = [100, 5, 5, maxEvents, 100];
   const n = axes.length;
 
-  ctx.clearRect(0, 0, size, size);
+  ctx.clearRect(0, 0, w, h);
 
   // Concentric polygon web
   for (let ring = 1; ring <= 5; ring++) {
@@ -794,7 +797,7 @@ function drawRadarChart() {
       i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     }
     ctx.closePath();
-    ctx.strokeStyle = ring === 5 ? 'rgba(148, 163, 184, 0.22)' : 'rgba(148, 163, 184, 0.10)';
+    ctx.strokeStyle = ring === 5 ? '#CBD5E1' : '#E2E8F0';
     ctx.lineWidth = 1;
     ctx.stroke();
   }
@@ -808,7 +811,7 @@ function drawRadarChart() {
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.lineTo(x, y);
-    ctx.strokeStyle = 'rgba(148, 163, 184, 0.16)';
+    ctx.strokeStyle = '#E2E8F0';
     ctx.stroke();
 
     // Smart label offset and alignment to prevent clipped or overlapping text
@@ -816,7 +819,7 @@ function drawRadarChart() {
     const lx = cx + Math.cos(angle) * labelDist;
     const ly = cy + Math.sin(angle) * labelDist;
     
-    ctx.fillStyle = '#CBD5E1';
+    ctx.fillStyle = '#334155';
     ctx.font = '600 10.5px Inter, sans-serif';
     
     // Compute textAlign and textBaseline relative to position to prevent clipping

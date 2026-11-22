@@ -375,3 +375,38 @@ def seed_rag_documents(cursor):
             INSERT OR REPLACE INTO documents (id, doc_type, title, content, metadata_json)
             VALUES (?, ?, ?, ?, ?)
         """, (d["id"], d["doc_type"], d["title"], d["content"], json.dumps(d["metadata"])))
+
+
+# ─────────────────────────────────────────────────────────────
+# ENTERPRISE EVENT MANAGEMENT SAMPLE DATASET ACCESS LAYER
+# ─────────────────────────────────────────────────────────────
+
+SAMPLE_DB_PATH = os.environ.get(
+    "SAMPLE_DATABASE_PATH",
+    os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "event_management.db")
+)
+
+def get_sample_db_connection():
+    """Returns a connection to the 1k Event Management Sample Database."""
+    if not os.path.exists(SAMPLE_DB_PATH):
+        # Auto-initialize if database file does not exist but SQL file is present
+        init_sample_db()
+    conn = sqlite3.connect(SAMPLE_DB_PATH)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
+    conn.execute("PRAGMA busy_timeout = 5000")
+    return conn
+
+def init_sample_db():
+    """Builds or verifies the 31-table event management sample database."""
+    sql_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "event-management-sample-database-1k-en_GB-v2.sql")
+    if not os.path.exists(sql_file):
+        return False
+    os.makedirs(os.path.dirname(SAMPLE_DB_PATH), exist_ok=True)
+    conn = sqlite3.connect(SAMPLE_DB_PATH)
+    with open(sql_file, "r", encoding="utf-8") as f:
+        sql = f.read()
+    conn.executescript(sql)
+    conn.close()
+    return True
+
