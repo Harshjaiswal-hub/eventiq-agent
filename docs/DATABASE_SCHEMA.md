@@ -1,6 +1,11 @@
 # EventIQ Agent — Database Schema & Data Provenance
 
-The EventIQ Agent utilizes an embedded, persistent **SQLite** database (`eventiq.db`) to ensure zero-configuration, reliable execution and restart resilience.
+The EventIQ Agent utilizes an embedded, persistent **SQLite** database (`eventiq.db`) to ensure zero-configuration, reliable execution, and restart resilience.
+
+- **Storage Engine:** SQLite 3.x
+- **Journal Mode:** Write-Ahead Logging (`PRAGMA journal_mode = WAL`)
+- **Foreign Keys:** Strictly Enforced (`PRAGMA foreign_keys = ON`)
+- **Busy Timeout:** 5000 ms (`PRAGMA busy_timeout = 5000`)
 
 ---
 
@@ -66,7 +71,7 @@ Detailed event records with provenance tracking for observed vs. imputed attenda
 - `club_id` (TEXT): Target club or `'all'`
 - `recommendation_text` (TEXT): Actionable suggested policy or intervention
 - `evidence_metric` (TEXT): Ground-truth metric triggering the recommendation
-- `status` (TEXT): `'pending'`, `'approved'`, `'rejected'`, `'revision_requested'`
+- `status` (TEXT): `'pending'`, `'approved'`, `'rejected'`, `'revision_requested'`, `'completed'`
 - `reviewer_comment` (TEXT, NULLABLE): Reviewer justification
 - `decision_timestamp` (TIMESTAMP, NULLABLE): When human decision was finalized
 - `created_at` (TIMESTAMP)
@@ -78,11 +83,55 @@ Detailed event records with provenance tracking for observed vs. imputed attenda
 - `content` (TEXT): Text content used for RAG grounding
 - `metadata_json` (TEXT): Serialized attributes
 - `embedding_json` (TEXT, NULLABLE): Serialized float vector
+- `created_at` (TIMESTAMP)
 
-### `execution_logs` (Audit Trail)
+### `execution_logs` (Multi-Agent Trace)
 - `id` (INTEGER, PK AUTOINCREMENT)
 - `session_id` (TEXT): Multi-agent execution session
 - `agent_name` (TEXT): Agent responsible (`data_analyst`, `reviewer_agent`, etc.)
 - `action` (TEXT): Specific step performed
 - `details_json` (TEXT): Step input/output payload
 - `created_at` (TIMESTAMP)
+
+### `users` (Authentication & RBAC)
+- `id` (TEXT, PK): User UUID
+- `username` (TEXT, UNIQUE): Login username
+- `password_hash` (TEXT): Memory-hard scrypt hash (`scrypt$N$r$p$salt$hash`)
+- `role` (TEXT): `'ADMIN'`, `'EVALUATOR'`, `'CLUB_LEAD'`
+- `club_id` (TEXT, NULLABLE): Assigned club identifier for `CLUB_LEAD` data isolation
+- `is_active` (INTEGER): `1` for active, `0` for deactivated
+- `created_at` (TIMESTAMP)
+- `updated_at` (TIMESTAMP)
+
+### `sessions` (Session State)
+- `token` (TEXT, PK): Cryptographically random 64-character hex session token
+- `user_id` (TEXT, FK -> `users.id` ON DELETE CASCADE)
+- `csrf_token` (TEXT): 64-character hex CSRF token
+- `ip_address` (TEXT): Client IP address
+- `user_agent` (TEXT): Browser user-agent
+- `expires_at` (TIMESTAMP): Absolute UTC expiration (8 hours)
+- `created_at` (TIMESTAMP)
+
+### `security_logs` (Security Event Audit Trail)
+- `id` (INTEGER, PK AUTOINCREMENT)
+- `event_type` (TEXT): Event classifier (`login_success`, `login_failed`, `rate_limit_exceeded`, `forbidden_access`, `csrf_violation`, `recommendation_decision`)
+- `username` (TEXT, NULLABLE)
+- `user_id` (TEXT, NULLABLE)
+- `ip_address` (TEXT)
+- `details_json` (TEXT, NULLABLE): Sanitized event payload (never contains passwords or tokens)
+- `created_at` (TIMESTAMP)
+
+---
+
+## 2. Performance & Security Indexes
+
+```sql
+CREATE INDEX IF NOT EXISTS idx_events_club_sem ON events(club_id, semester);
+CREATE INDEX IF NOT EXISTS idx_messages_conv ON messages(conversation_id);
+CREATE INDEX IF NOT EXISTS idx_recs_sem_status ON recommendations(semester, status);
+CREATE INDEX IF NOT EXISTS idx_exec_logs_session ON execution_logs(session_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
+CREATE INDEX IF NOT EXISTS idx_security_logs_event ON security_logs(event_type);
+CREATE INDEX IF NOT EXISTS idx_security_logs_user ON security_logs(username);
+```
