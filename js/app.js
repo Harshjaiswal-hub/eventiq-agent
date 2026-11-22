@@ -1022,7 +1022,13 @@ async function renderFullReport() {
   if (table) {
     table.innerHTML = agent.rankings.map(d => `
       <tr>
-        <td><span class="club-dot" style="background:${d.club.color}"></span>${d.club.icon} ${d.club.name}</td>
+        <td>
+          <span class="table-club-cell">
+            <span class="club-dot" style="background:${d.club.color}"></span>
+            <span class="table-club-icon">${d.club.icon}</span>
+            <span>${escapeHtml(d.club.name)}</span>
+          </span>
+        </td>
         <td class="rank-cell">#${d.rank}</td>
         <td>${d.composite}</td>
         <td>${d.metrics.totalRegistrations}</td>
