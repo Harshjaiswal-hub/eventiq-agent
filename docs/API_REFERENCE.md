@@ -294,3 +294,111 @@ Inspects real-time security events (failed logins, rate limit violations, access
 
 ### `GET /api/logs/execution`
 Multi-agent execution traces filtered by session.
+
+---
+
+## 6. Decision Support & Predictive Intelligence Endpoints
+
+### `POST /api/intelligence/predict`
+Predicts future event registrations, turnout rate, and attendance using historical data and small-sample statistical baseline bounds.
+
+- **Request Body:**
+  ```json
+  {
+    "club_name": "CodeCraft",
+    "event_type": "Hackathon",
+    "semester": "Spring 2026"
+  }
+  ```
+- **Response (200 OK):**
+  ```json
+  {
+    "status": "success",
+    "club": "CodeCraft",
+    "club_id": "codecraft",
+    "target_format": "Hackathon",
+    "forecast": {
+      "expected_attendance": 174,
+      "attendance_range": [146, 188],
+      "expected_registrations": 188,
+      "registrations_range": [139, 237],
+      "expected_turnout_rate": 92.5,
+      "confidence": "Moderate (Historical sample N=4, consistency stable)",
+      "margin_of_error_percent": 8.1
+    },
+    "trend_analysis": {
+      "momentum": "Strongly growing participation (+10+ registrations per event)",
+      "turnout_std_dev": 8.14,
+      "historical_mean_attendance": 133.0,
+      "historical_mean_turnout_rate": 91.1
+    },
+    "influencing_events": [ ... ],
+    "primary_influencing_event": {
+      "name": "Hackathon 3.0",
+      "rationale": "Most recent event of matching format 'Hackathon'"
+    },
+    "limitations": [
+      "Small sample size (N=4 events in Spring 2026).",
+      "Assumes 14-day advance notice without exam period schedule collisions.",
+      "Linear trend projection without macroeconomic student population shifts."
+    ],
+    "markdown": "## 🔮 Predictive Attendance Forecast: ..."
+  }
+  ```
+- **Response (200 OK - Refusal on Insufficient Data):**
+  ```json
+  {
+    "status": "insufficient_data",
+    "club": "SparseClub",
+    "event_count": 1,
+    "message": "Insufficient historical data to make an evidence-grounded prediction for SparseClub. Minimum 2 events required, but only 1 recorded for Spring 2026.",
+    "recommendation": "Record at least 2 verified club events before generating predictive attendance models."
+  }
+  ```
+
+### `POST /api/intelligence/plan`
+Generates a structured event plan and budget allocation constrained by budget and club historical performance.
+
+- **Request Body:**
+  ```json
+  {
+    "club_name": "CodeCraft",
+    "budget": 20000,
+    "event_type": "Hackathon",
+    "semester": "Spring 2026"
+  }
+  ```
+- **Response (200 OK):**
+  ```json
+  {
+    "status": "success",
+    "club": "CodeCraft",
+    "club_id": "codecraft",
+    "format": "Hackathon",
+    "budget": 20000.0,
+    "duration_hours": 24.0,
+    "unit_economics": {
+      "expected_registrations": 188,
+      "expected_attendance": 174,
+      "attendance_range": [146, 188],
+      "cost_per_attendee_inr": 114.9
+    },
+    "budget_allocation": {
+      "prizes_and_awards": { "percentage": 35, "amount": 7000 },
+      "refreshments_and_catering": { "percentage": 35, "amount": 7000 },
+      "technical_infrastructure": { "percentage": 15, "amount": 3000 },
+      "marketing_and_merchandise": { "percentage": 5, "amount": 1000 },
+      "contingency_reserve": { "percentage": 10, "amount": 2000 }
+    },
+    "speaker_strategy": {
+      "status": "recommended",
+      "historical_speaker_rating": "4.8/5.0",
+      "guidance": "Strong precedent (4.8/5.0 average). Allocate budget for an industry practitioner..."
+    },
+    "improvements": [ ... ],
+    "required_resources": [ ... ],
+    "risks": [ ... ],
+    "warnings": [],
+    "markdown": "## 💡 Event Execution Plan & Budget Proposal: ..."
+  }
+  ```

@@ -235,7 +235,32 @@ def run_checks():
     assert "Action Plan & Governance Approval Status" in report_md
     print("  [OK] Professional report structure verified (All 5 mandatory sections present).")
 
-    print("\n[SUCCESS] ALL SUBSYSTEM, SECURITY, PHASE 3, 4 & 5 API CHECKS PASSED SUCCESSFULLY!")
+    # 26. Feature 1: POST /api/intelligence/predict (Predictive Event Intelligence)
+    status, pred_res = request_json("POST", "/api/intelligence/predict", {
+        "club_name": "CodeCraft",
+        "event_type": "Hackathon",
+        "semester": "Spring 2026"
+    })
+    assert status == 200
+    assert pred_res["status"] == "success"
+    assert pred_res["forecast"]["expected_attendance"] > 0
+    assert len(pred_res["influencing_events"]) >= 3
+    print(f"  [OK] POST /api/intelligence/predict verified (Expected CodeCraft hackathon turnout: {pred_res['forecast']['expected_attendance']} students).")
+
+    # 27. Feature 2: POST /api/intelligence/plan (Intelligent Event Planning & Budget Optimizer)
+    status, plan_res = request_json("POST", "/api/intelligence/plan", {
+        "club_name": "CodeCraft",
+        "budget": 20000,
+        "semester": "Spring 2026"
+    })
+    assert status == 200
+    assert plan_res["status"] == "success"
+    assert "budget_allocation" in plan_res
+    assert plan_res["budget"] == 20000
+    assert plan_res["speaker_strategy"]["status"] == "recommended"
+    print(f"  [OK] POST /api/intelligence/plan verified (Plan generated for CodeCraft with ₹20,000 budget).")
+
+    print("\n[SUCCESS] ALL SUBSYSTEM, SECURITY, PHASE 3, 4, 5 & INTELLIGENCE API CHECKS PASSED SUCCESSFULLY!")
 
 if __name__ == "__main__":
     run_checks()

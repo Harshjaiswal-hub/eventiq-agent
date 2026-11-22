@@ -10,6 +10,8 @@
 **EventIQ Agent** is an enterprise-grade analytics, audit, and decision-governance platform that transforms raw student event data into tamper-proof, evidence-backed institutional performance evaluations.
 
 ### Key Architectural Pillars:
+- **Predictive Event Intelligence (New):** Predicts future event registrations and actual attendance using statistical baselines, trend momentum, and variance intervals with explicit refusal when insufficient data exists.
+- **Intelligent Event Planning & Budget Optimizer (New):** Converts historical event ROI and budget limits into structured event execution proposals, duration estimates, unit economics, risk matrices, and evidence-conditioned speaker recommendations.
 - **Deterministic Analytics Engine:** Implements the official 5-metric composite scoring algorithm strictly in Python (`backend/tools.py`), eliminating generative arithmetic or hallucinations.
 - **Statistical Imputation with Provenance:** Transparently audits missing student turnouts and feedback forms, imputing missing attendance using historical club averages while preserving ground truth.
 - **Phase 2 Security Hardening:** Scrypt password hashing, 8-hour HttpOnly session cookies, CSRF protection, constant-time verification, sliding-window rate limiters, and server-side RBAC (ADMIN, EVALUATOR, CLUB_LEAD).
@@ -53,10 +55,10 @@ Open your browser to:
 All tests execute genuine assertions against live SQLite and Python logic. Zero fabricated results.
 
 ```powershell
-# Run 41 comprehensive unit tests (Scoring, Memory, Multi-Agent, Security, Concurrency)
+# Run 49 comprehensive unit tests (Scoring, Memory, Multi-Agent, Security, Concurrency, Predictive & Planning Intelligence)
 python -m unittest discover tests -v
 
-# Run 25 full integration checks against ephemeral server
+# Run 27 full integration checks against ephemeral server
 python tests/run_integrated_tests.py
 
 # Run standalone database backup and restoration drill
@@ -65,8 +67,9 @@ python scripts/restore.py backups/<backup_file>.db
 ```
 
 ### Verified Test Results (November 2026):
-- ✅ **41/41 Unit Tests PASSED** (`test_analytics.py`, `test_security.py`, `test_concurrency.py`)
-- ✅ **25/25 Integration Checks PASSED** (`tests/run_integrated_tests.py`)
+- ✅ **49/49 Unit Tests PASSED** (`test_analytics.py`, `test_security.py`, `test_concurrency.py`, `test_intelligence.py`)
+- ✅ **27/27 Integration Checks PASSED** (`tests/run_integrated_tests.py`)
+- ✅ **8/8 Predictive & Planning Intelligence Tests PASSED** (attendance forecasting, budget optimizer, refusal guards, supervisor routing)
 - ✅ **5/5 Concurrency Tests PASSED** (20 concurrent readers, mixed read/write, thread-safe rate limiters)
 - ✅ **Browser Console:** 0 uncaught errors, 0 runtime exceptions across all 5 views.
 

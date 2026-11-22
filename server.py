@@ -48,7 +48,9 @@ from backend.tools import (
     compare_semesters,
     get_club_event_trends,
     audit_data_quality,
-    generate_event_report
+    generate_event_report,
+    predict_event_attendance,
+    optimize_event_plan
 )
 from backend.memory import (
     create_conversation,
@@ -651,6 +653,47 @@ class EventIQHandler(SimpleHTTPRequestHandler):
             club = body.get("club_name")
             res = compare_semesters(sem_a, sem_b, club)
             self.send_json(res)
+            return
+
+        # ── 6. PREDICTIVE EVENT INTELLIGENCE ─────────────────
+        elif path == "/api/intelligence/predict":
+            club = body.get("club_name") or body.get("club") or ""
+            event_type = body.get("event_type")
+            semester = body.get("semester", "Spring 2026")
+
+            if not club:
+                self.send_json({"status": "error", "message": "Missing 'club_name' in request body."}, 400)
+                return
+
+            res = predict_event_attendance(club, event_type=event_type, semester=semester)
+            status_code = 200 if res.get("status") in ("success", "insufficient_data") else 400
+            self.send_json(res, status_code=status_code)
+            return
+
+        # ── 7. INTELLIGENT EVENT PLANNING & BUDGET OPTIMIZER ──
+        elif path == "/api/intelligence/plan":
+            club = body.get("club_name") or body.get("club") or ""
+            budget = body.get("budget")
+            event_type = body.get("event_type")
+            semester = body.get("semester", "Spring 2026")
+
+            if not club:
+                self.send_json({"status": "error", "message": "Missing 'club_name' in request body."}, 400)
+                return
+
+            if budget is None:
+                self.send_json({"status": "error", "message": "Missing 'budget' in request body."}, 400)
+                return
+
+            try:
+                budget_val = float(budget)
+            except (ValueError, TypeError):
+                self.send_json({"status": "error", "message": "Budget must be a valid number."}, 400)
+                return
+
+            res = optimize_event_plan(club, budget=budget_val, event_type=event_type, semester=semester)
+            status_code = 200 if res.get("status") == "success" else 400
+            self.send_json(res, status_code=status_code)
             return
 
         self.send_json({"status": "error", "message": f"Endpoint not found: {path}"}, 404)

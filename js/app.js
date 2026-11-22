@@ -468,7 +468,21 @@ async function fetchExecutionTrace(sessionId) {
 function getThinkingSteps(query) {
   const q = query.toLowerCase();
   const base = ['🤖 Supervisor: Routing query…', '📊 Data Analyst: Computing verified metrics…', '🧮 Reviewer: Auditing claims…'];
-  if (q.match(/audit|flagship|multi-agent|plan/)) return [
+  if (q.match(/predict|forecast|expected to attend|how many students|turnout/)) return [
+    '🔮 Predictive Intelligence: Fetching club historical event logs…',
+    '📈 Trend Analysis: Calculating registration momentum and turnout rates…',
+    '🎯 Statistical Baseline: Computing confidence bounds & variance…',
+    '📜 Provenance Audit: Identifying benchmark influencing events…',
+    '📝 Finalizing predictive forecast…'
+  ];
+  if (q.match(/plan|budget|budget optimizer|plan a technical event/)) return [
+    '💡 Planning Optimizer: Analyzing club historical event performance…',
+    '💰 Budget Allocation: Calculating prize, catering, and infrastructure items…',
+    '🎤 Speaker Strategy: Auditing past guest speaker ratings…',
+    '🛡️ Risk Assessment: Generating mitigation & contingency matrix…',
+    '📋 Finalizing event execution proposal…'
+  ];
+  if (q.match(/audit|flagship|multi-agent/)) return [
     '🤖 Supervisor: Initializing 4-Agent Team…',
     '📊 Data Analyst: Calculating 5-metric composite scores…',
     '🔎 Research Agent: Retrieving institutional rubrics…',

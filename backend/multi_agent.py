@@ -19,7 +19,9 @@ from backend.tools import (
     compare_clubs,
     audit_data_quality,
     get_historical_performance,
-    generate_event_report
+    generate_event_report,
+    predict_event_attendance,
+    optimize_event_plan
 )
 from backend.memory import (
     add_message,
@@ -368,7 +370,105 @@ class MultiAgentSupervisor:
         q = user_query.lower()
 
         # Check intent
-        if any(k in q for k in ["audit", "semester audit", "multi-agent", "flagship", "full analysis", "comprehensive"]):
+        # 1. Predictive Event Intelligence (Feature 1)
+        if any(k in q for k in ["predict", "forecast", "expected to attend", "how many students", "expected attendance", "expected participation", "project attendance", "attendance projection"]):
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, name FROM clubs")
+            clubs_info = cursor.fetchall()
+            conn.close()
+
+            target_club = None
+            for c in clubs_info:
+                if c["name"].lower() in q or c["id"].lower() in q:
+                    target_club = c["name"]
+                    break
+
+            if not target_club:
+                # Check conversation history to see if a club was previously discussed
+                history = get_conversation_history(self.session_id, limit=3)
+                for h in reversed(history):
+                    for c in clubs_info:
+                        if c["name"].lower() in h["content"].lower():
+                            target_club = c["name"]
+                            break
+                    if target_club:
+                        break
+
+            if not target_club:
+                target_club = "CodeCraft"
+
+            # Detect format / event type if mentioned
+            event_type = None
+            for fmt in ["hackathon", "workshop", "bootcamp", "competition", "contest", "seminar", "talk", "demo", "practice session"]:
+                if fmt in q:
+                    event_type = fmt.title()
+                    break
+
+            pred_res = predict_event_attendance(target_club, event_type=event_type, semester=semester)
+            if pred_res.get("status") == "success":
+                content = pred_res["markdown"]
+                tool_calls = [{"tool": "predict_event_attendance", "status": "success", "club": target_club, "event_type": event_type}]
+            else:
+                content = f"⚠️ **Forecasting Unavailable:** {pred_res.get('message', 'Unable to forecast attendance.')}"
+                tool_calls = [{"tool": "predict_event_attendance", "status": pred_res.get("status", "error")}]
+
+        # 2. Intelligent Event Planning & Budget Optimizer (Feature 2)
+        elif any(k in q for k in ["plan a technical event", "plan event", "plan an event", "budget of", "budget optimizer", "plan a", "plan for", "optimize budget", "what should we organize", "how should we spend"]):
+            import re
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, name FROM clubs")
+            clubs_info = cursor.fetchall()
+            conn.close()
+
+            target_club = None
+            for c in clubs_info:
+                if c["name"].lower() in q or c["id"].lower() in q:
+                    target_club = c["name"]
+                    break
+
+            if not target_club:
+                target_club = "CodeCraft"
+
+            # Extract budget amount (supports ₹20,000, 20000, 20k, 25000 inr, $500, etc.)
+            budget = 20000.0
+            budget_match = re.search(r'(?:budget\s*(?:of)?\s*[₹$€]?\s*([0-9,]+(?:\.[0-9]+)?)|[₹$€]\s*([0-9,]+(?:\.[0-9]+)?)|([0-9,]+)\s*(?:k\b|thousand)|([0-9,]+)\s*(?:inr|rs|rupees))', q)
+            if budget_match:
+                for grp in budget_match.groups():
+                    if grp:
+                        raw_num = grp.replace(",", "")
+                        try:
+                            val = float(raw_num)
+                            if "k" in q or "thousand" in q:
+                                val = val * 1000
+                            budget = val
+                            break
+                        except ValueError:
+                            pass
+            elif re.search(r'\b(\d{4,6})\b', q):
+                num_m = re.search(r'\b(\d{4,6})\b', q)
+                try:
+                    budget = float(num_m.group(1))
+                except ValueError:
+                    pass
+
+            # Detect format if mentioned
+            event_type = None
+            for fmt in ["hackathon", "workshop", "competition", "seminar", "talk", "bootcamp"]:
+                if fmt in q:
+                    event_type = fmt.title()
+                    break
+
+            plan_res = optimize_event_plan(target_club, budget=budget, event_type=event_type, semester=semester)
+            if plan_res.get("status") == "success":
+                content = plan_res["markdown"]
+                tool_calls = [{"tool": "optimize_event_plan", "status": "success", "club": target_club, "budget": budget}]
+            else:
+                content = f"⚠️ **Event Planning Error:** {plan_res.get('message', 'Unable to generate event plan.')}"
+                tool_calls = [{"tool": "optimize_event_plan", "status": plan_res.get("status", "error")}]
+
+        elif any(k in q for k in ["audit", "semester audit", "multi-agent", "flagship", "full analysis", "comprehensive"]):
             audit_result = self.run_semester_audit(semester)
             content = audit_result["markdown"]
             tool_calls = [{"tool": "run_semester_audit", "status": "success"}]
