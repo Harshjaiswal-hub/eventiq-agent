@@ -474,9 +474,11 @@ class EventIQHandler(SimpleHTTPRequestHandler):
                     "role": user["role"],
                     "club_id": user["club_id"]
                 },
-                "csrf_token": csrf_token
-                # NOTE: session_token is intentionally NOT returned in the JSON body.
-                # It is set exclusively via HttpOnly cookie to prevent XSS token theft.
+                "csrf_token": csrf_token,
+                "session_token": session_token
+                # session_token returned for API/Bearer-token clients.
+                # Browser clients use the HttpOnly cookie set above.
+                # Both auth paths are supported by get_current_user().
             }, 200, headers=headers)
             return
 
