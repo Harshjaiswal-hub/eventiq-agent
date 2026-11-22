@@ -5,6 +5,7 @@
 // ── Agent instance ──────────────────────────────────────────
 const agent = new EventAnalyticsAgent(CLUBS, SEMESTER);
 let agentReady = false;
+window.agentReady = false; // expose globally for headless capture scripts
 let currentView = 'dashboard';
 
 // ── Authentication & Security State (Phase 2) ───────────────
@@ -147,6 +148,7 @@ async function bootAgent() {
 
   updateStatus('Ready');
   agentReady = true;
+  window.agentReady = true; // signal to headless capture scripts
   showToast(loadedFromBackend ? 'Connected to Python analytics engine (Single Source of Truth).' : 'Agent ready (offline mode).');
 
   // Welcome message in chat
@@ -320,6 +322,15 @@ document.addEventListener('keydown', (e) => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.hasAttribute('data-prompt')) {
     e.preventDefault();
     submitPrompt(e.target.dataset.prompt);
+  }
+  // Escape closes any open modal
+  if (e.key === 'Escape') {
+    const clubModal = document.getElementById('club-detail-modal');
+    if (clubModal && clubModal.style.display !== 'none') { closeClubDetail(); return; }
+    const confirmModal = document.getElementById('decision-confirm-modal');
+    if (confirmModal && confirmModal.style.display !== 'none') { closeConfirmModal(); return; }
+    const loginModal = document.getElementById('login-modal');
+    if (loginModal && loginModal.style.display !== 'none') { closeLoginModal(); return; }
   }
 });
 
@@ -1454,6 +1465,11 @@ function showToast(msg) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
 }
+
+// Expose key functions globally for capture scripts and external callers
+window.switchView = switchView;
+window.openClubDetail = openClubDetail;
+window.closeClubDetail = closeClubDetail;
 
 // Re-draw charts on resize and setup ResizeObserver for robust layout adaptation
 let resizeTimeout = null;

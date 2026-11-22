@@ -468,6 +468,7 @@ html, body {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
+  align-items: stretch;
 }
 
 .kpi-card {
@@ -478,6 +479,7 @@ html, body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  min-height: 100px;
   box-shadow: var(--shadow-sm);
   transition: border-color var(--transition-fast), transform var(--transition-fast);
   position: relative;
@@ -529,6 +531,7 @@ html, body {
   color: var(--text);
   line-height: 1.1;
   font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
   margin-bottom: 4px;
 }
 
@@ -540,10 +543,26 @@ html, body {
 /* ── Dashboard Grid ───────────────────────────────────────── */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 1fr 1.25fr;
+  grid-template-columns: 1fr 1.3fr;
   gap: 18px;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
+}
+
+/* Charts column layout */
+.dashboard-charts-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.chart-panel {
+  flex: 1;
+  min-height: 180px;
+  overflow: hidden;
 }
 
 .panel {
@@ -733,13 +752,16 @@ html, body {
   font-weight: 700;
   color: var(--text);
   font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .lb-score span {
   font-size: 10px;
   color: var(--text-mute);
   font-weight: 500;
+  margin-left: 1px;
 }
 
 .lb-xai-row {
@@ -791,6 +813,9 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: center;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* Charts Canvas */
@@ -798,12 +823,18 @@ html, body {
   position: relative;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
 }
 
 canvas {
-  width: 100% !important;
-  height: 100% !important;
   display: block;
+  max-width: 100%;
+}
+
+/* Warning text in event cards */
+.warn {
+  color: var(--amber);
+  font-size: 11px;
 }
 
 /* Loading & Empty States */
@@ -1442,6 +1473,19 @@ canvas {
   font-weight: 600;
 }
 
+/* Semantic color variants for rec filter buttons */
+.rec-btn-pending { color: var(--amber); border-color: rgba(245, 158, 11, 0.4); }
+.rec-btn-pending.active { background: var(--amber); color: #000; border-color: transparent; }
+
+.rec-btn-approved { color: var(--emerald); border-color: rgba(16, 185, 129, 0.4); }
+.rec-btn-approved.active { background: var(--emerald); color: #fff; border-color: transparent; }
+
+.rec-btn-completed { color: var(--sky); border-color: rgba(14, 165, 233, 0.4); }
+.rec-btn-completed.active { background: var(--sky); color: #fff; border-color: transparent; }
+
+.rec-btn-revision { color: var(--purple); border-color: rgba(168, 85, 247, 0.4); }
+.rec-btn-revision.active { background: var(--purple); color: #fff; border-color: transparent; }
+
 .recommendations-list {
   display: flex;
   flex-direction: column;
@@ -1839,24 +1883,30 @@ canvas {
   gap: 10px;
 }
 
-.club-modal-metric-card {
+/* Support both class names (CSS authoring vs JS-generated) */
+.club-modal-metric-card,
+.modal-metric-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 10px 12px;
 }
 
-.metric-card-label {
+.metric-card-label,
+.modal-metric-label {
   font-size: 10.5px;
   color: var(--text-mute);
   margin-bottom: 2px;
+  display: block;
 }
 
-.metric-card-value {
+.metric-card-value,
+.modal-metric-val {
   font-size: 16px;
   font-weight: 700;
   color: var(--text);
   font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
 }
 
 .club-modal-events-list {
