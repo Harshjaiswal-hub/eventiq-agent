@@ -376,6 +376,8 @@ async function submitPrompt(query) {
 
   // Attempt backend API call first for genuine multi-agent execution
   let responseContent = null;
+  let responseNextPrompts = [];
+  let agentUsed = null;
   const sessionId = getSessionId();
   try {
     const res = await fetch('/api/agent/chat', {
@@ -387,6 +389,8 @@ async function submitPrompt(query) {
       const data = await res.json();
       if (data && data.content) {
         responseContent = data.content;
+        responseNextPrompts = data.next_prompts || [];
+        agentUsed = data.agent_used || null;
       }
     }
   } catch (err) {
@@ -400,7 +404,7 @@ async function submitPrompt(query) {
   }
 
   thinking.remove();
-  appendMessage('agent', responseContent);
+  appendMessage('agent', responseContent, responseNextPrompts, agentUsed);
 
   // Fetch updated execution trace after agent activity
   await fetchExecutionTrace(sessionId);
@@ -510,18 +514,50 @@ function getThinkingSteps(query) {
   return [...base, '📝 Generating response…'];
 }
 
-function appendMessage(role, content) {
+function appendMessage(role, content, nextPrompts = [], agentUsed = null) {
   const feed = document.getElementById('chat-feed');
   const div = document.createElement('div');
   div.className = `msg msg-${role}`;
+
+  let agentBadge = '';
+  if (role === 'agent' && agentUsed) {
+    const formattedAgent = agentUsed.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    agentBadge = `<div class="msg-agent-tag"><span class="agent-tag-dot"></span>${escapeHtml(formattedAgent)}</div>`;
+  }
+
+  let promptsHtml = '';
+  if (role === 'agent' && Array.isArray(nextPrompts) && nextPrompts.length > 0) {
+    const chips = nextPrompts.map(p => 
+      `<button type="button" class="prompt-chip" onclick="handlePromptClick(this.getAttribute('data-query'))" data-query="${escapeHtml(p)}">${escapeHtml(p)}</button>`
+    ).join('');
+    promptsHtml = `
+      <div class="msg-suggested-prompts">
+        <div class="suggested-prompts-label">Suggested follow-ups:</div>
+        <div class="prompt-chips-group">${chips}</div>
+      </div>
+    `;
+  }
+
   div.innerHTML = `
     <div class="msg-avatar">${role === 'agent' ? '🤖' : '👤'}</div>
-    <div class="msg-bubble">${renderMarkdown(content)}</div>
+    <div class="msg-bubble-container">
+      ${agentBadge}
+      <div class="msg-bubble">${renderMarkdown(content)}</div>
+      ${promptsHtml}
+    </div>
   `;
   feed.appendChild(div);
   feed.scrollTop = feed.scrollHeight;
   return div;
 }
+
+window.handlePromptClick = function(text) {
+  const input = document.getElementById('chat-input');
+  if (input) {
+    input.value = text;
+    sendQuery(text);
+  }
+};
 
 function appendThinking() {
   const feed = document.getElementById('chat-feed');
