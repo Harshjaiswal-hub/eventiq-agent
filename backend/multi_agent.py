@@ -1083,7 +1083,7 @@ class MultiAgentSupervisor:
         ]):
             agent_name = "knowledge_agent"
             meth = retrieve_scoring_methodology()
-            content = meth["markdown"]
+            content = meth.get("markdown") or f"EventIQ Composite Scoring Rubric:\n{json.dumps(meth.get('weights_breakdown', {}), indent=2)}"
             tool_calls.append({"tool": "retrieve_scoring_methodology", "status": "success"})
             next_prompts = [
                 "Who performed best this semester?",

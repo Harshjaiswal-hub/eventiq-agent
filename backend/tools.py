@@ -290,9 +290,9 @@ def analyze_club_performance(club_name: str, semester: str = "Spring 2026") -> D
         "status": "success",
         "semester": semester,
         "club": target["name"],
-        "club_id": target.get("club_id", target["name"].lower().replace(" ", "")),
+        "club_id": target["club_id"],
         "rank": target["rank"],
-        "total_clubs": len(rankings_res["rankings"]),
+        "total_clubs": len(rankings_res.get("rankings", [])),
         "composite_score": target["composite_score"],
         "metrics": {
             "attendance_rate": target["attendance_rate"],
@@ -1370,15 +1370,9 @@ def get_club_profile(club_name: str, semester: str = "Spring 2026") -> Dict[str,
     if perf.get("status") != "success":
         return perf
     
-    cid = perf.get("club_id")
+    cid = perf.get("club_id") or perf.get("club")
     conn = get_db_connection()
     cursor = conn.cursor()
-    
-    # If cid not present, resolve from clubs table
-    if not cid:
-        cursor.execute("SELECT id FROM clubs WHERE LOWER(name) = LOWER(?) OR LOWER(id) = LOWER(?)", (club_name, club_name))
-        c_row = cursor.fetchone()
-        cid = c_row["id"] if c_row else club_name.lower().replace(" ", "")
     
     # Fetch club events
     cursor.execute("""
@@ -1394,6 +1388,7 @@ def get_club_profile(club_name: str, semester: str = "Spring 2026") -> Dict[str,
     for r in rows:
         fb_list = json.loads(r["feedback_json"]) if r["feedback_json"] else []
         fb_avg = round(sum(fb_list)/len(fb_list), 2) if fb_list else None
+        is_fb_missing = not bool(r["feedback_json"])
         events_list.append({
             "id": r["id"],
             "name": r["name"],
@@ -1401,11 +1396,11 @@ def get_club_profile(club_name: str, semester: str = "Spring 2026") -> Dict[str,
             "date": r["date"],
             "registrations": r["registrations"],
             "attendance": r["attendance"],
-            "turnout_pct": round((r["attendance"] / r["registrations"] * 100.0), 1) if (r["registrations"] and r["attendance"] is not None) else None,
+            "turnout_pct": round((r["attendance"] / r["registrations"] * 100.0), 1) if (r["attendance"] is not None and r["registrations"]) else None,
             "avg_feedback": fb_avg,
             "speaker_rating": r["speaker_rating"],
             "is_attendance_imputed": bool(r["is_attendance_imputed"]),
-            "is_feedback_imputed": bool(not r["feedback_json"])
+            "is_feedback_imputed": is_fb_missing
         })
     
     # Fetch recommendations for this club
@@ -1469,7 +1464,8 @@ def get_events_catalog(semester: str = "Spring 2026", club_name: Optional[str] =
     for r in rows:
         fb_list = json.loads(r["feedback_json"]) if r["feedback_json"] else []
         fb_avg = round(sum(fb_list)/len(fb_list), 2) if fb_list else None
-        has_gap = bool(r["is_attendance_imputed"] or not r["feedback_json"])
+        is_fb_missing = not bool(r["feedback_json"])
+        has_gap = bool(r["is_attendance_imputed"] or is_fb_missing)
         if gaps_only and not has_gap:
             continue
         
@@ -1488,7 +1484,7 @@ def get_events_catalog(semester: str = "Spring 2026", club_name: Optional[str] =
             "speaker_rating": r["speaker_rating"],
             "has_gap": has_gap,
             "is_attendance_imputed": bool(r["is_attendance_imputed"]),
-            "is_feedback_imputed": bool(not r["feedback_json"])
+            "is_feedback_imputed": is_fb_missing
         })
     
     # Statistical highlights
@@ -1529,7 +1525,6 @@ def calculate_attendance_metrics(semester: str = "Spring 2026") -> Dict[str, Any
     overall_turnout_pct = round((total_att / total_reg * 100.0), 1) if total_reg else 0.0
     
     # Per club breakdown
-    from collections import defaultdict
     club_stats = defaultdict(lambda: {"reg": 0, "att": 0, "events": 0, "rates": []})
     for r in rows:
         c_name = r["club_name"]
@@ -1575,7 +1570,6 @@ def calculate_feedback_metrics(semester: str = "Spring 2026") -> Dict[str, Any]:
     rows = cursor.fetchall()
     conn.close()
     
-    from collections import defaultdict
     all_ratings = []
     club_ratings = defaultdict(list)
     top_events = []
@@ -1718,29 +1712,31 @@ def retrieve_scoring_methodology() -> Dict[str, Any]:
     docs = cursor.fetchall()
     conn.close()
     
-    md = [
-        "## 📐 Institutional Scoring Methodology & Evaluation Framework",
-        "",
-        "EventIQ computes deterministic composite scores for all technical clubs using min-max normalization:",
-        r"$$\text{Composite Score} = \sum_{i=1}^5 w_i \times \text{Norm}(M_i) \quad (\sum w_i = 1.0000)$$",
-        "",
-        "### ⚖️ Official Evaluation Metric Weights",
-        "- **Attendance Rate (30% weight, $w=0.30$):** Measures real student turnout relative to total registrations.",
-        "- **Student Feedback (30% weight, $w=0.30$):** Post-event participant survey score on a 1.0 to 5.0 Likert scale.",
-        "- **Speaker Rating (15% weight, $w=0.15$):** Evaluation of guest mentors and industry speakers.",
-        "- **Turnout Consistency (15% weight, $w=0.15$):** Turnout stability (inverted standard deviation of attendance).",
-        "- **Event Pipeline (10% weight, $w=0.10$):** Quantitative activity metric scaled across active campus clubs.",
-        "",
-        "### 🛡️ Data Governance & Imputation",
-        "- Events missing check-in logs after 48 hours are statistically imputed using the club's historical attendance ratio.",
-        "- All imputed records are permanently flagged with `is_attendance_imputed=True` and disclosed in audit reports."
-    ]
-    markdown_content = "\n".join(md)
+    md_content = """### EventIQ Institutional Scoring Methodology & Evaluation Rubric
+
+EventIQ evaluates student organizations using a weighted composite index bounded to a **0–100 scale** via deterministic min-max normalization:
+
+| Evaluation Dimension | Weight | Institutional Purpose & Measurement |
+| :--- | :--- | :--- |
+| **Attendance Rate** | **30%** | Participant turnout percentage relative to confirmed event registrations |
+| **Student Feedback** | **30%** | Average post-session participant satisfaction ratings (1.0–5.0 Likert scale) |
+| **Speaker Rating** | **15%** | External guest speaker and mentor evaluations (1.0–5.0 scale) |
+| **Consistency Index** | **15%** | Inverted variance of attendance turnout stability across organized events |
+| **Event Pipeline** | **10%** | Total verified technical events executed during the academic semester |
+
+#### Mathematical Formulation
+$$\\text{Composite Score} = \\sum_{i=1}^{5} (\\text{Normalized Metric}_i \\times \\text{Weight}_i)$$
+
+- **Min-Max Normalization:** Each raw metric is scaled across all peer clubs in the semester:
+  $$\\text{Normalized}(x) = \\frac{x - \\min(x)}{\\max(x) - \\min(x)} \\times 100$$
+- **Weights Constraint:** $\\sum \\text{Weights} = 1.0$ (100%).
+- **Governance & Imputation:** Missing attendance logs exceeding 48 hours are automatically flagged and imputed using the club's empirical mean ratio with complete audit transparency.
+"""
     
     return {
         "status": "success",
-        "markdown": markdown_content,
         "official_weights": WEIGHTS,
+        "markdown": md_content,
         "weights_breakdown": {
             "attendance_rate": "30% (Participant turnout percentage relative to signups)",
             "avg_feedback": "30% (Participant evaluation on 1.0 to 5.0 Likert scale)",
