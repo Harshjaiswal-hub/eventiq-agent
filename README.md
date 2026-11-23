@@ -1,7 +1,8 @@
 # EventIQ Agent — Enterprise Institutional Analytics & Decision Support
 
 > **EventIQ Agent — A Memory-Enabled, Tool-Using Multi-Agent System for Club Performance Analysis & Decision Governance**  
-> Version 2.1.0 (Autonomous AI Agent & Cloud Deployment Release)
+> Version 2.1.0 (Autonomous AI Agent & Cloud Deployment Release)  
+> **Author & Lead Developer:** **Harsh Jaiswal** ([@Harshjaiswal-hub](https://github.com/Harshjaiswal-hub))
 
 ---
 
@@ -159,6 +160,15 @@ For complete mathematical definitions and statistical imputation proofs, see [do
 - **Company Internal Testing:** 🟡 **PASS WITH CONDITIONS** (Configure `.env` passwords and CORS origins)
 - **Controlled Company Pilot:** 🟡 **CONDITIONAL** (Requires HTTPS reverse proxy via Nginx/Caddy)
 - **Full Production Deployment:** 🔴 **BLOCKED PENDING HTTPS & USER MANAGEMENT API** (Detailed in [Production Readiness Report](file:///C:/Users/Admin/.gemini/antigravity/brain/cd7bf395-e162-4f13-a129-fb5899868b08/EVENTIQ_PRODUCTION_READINESS_REPORT.md))
+
+---
+
+## 👨‍💻 Author & Developer
+
+- **Lead Developer:** **Harsh Jaiswal**
+- **GitHub:** [@Harshjaiswal-hub](https://github.com/Harshjaiswal-hub)
+- **Repository:** [https://github.com/Harshjaiswal-hub/eventiq-agent](https://github.com/Harshjaiswal-hub/eventiq-agent)
+- **Email:** jaiswalbittu462@gmail.com
 
 ---
 

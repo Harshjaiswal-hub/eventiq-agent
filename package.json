@@ -2,6 +2,7 @@
   "name": "eventiq-agent",
   "version": "2.0.0",
   "description": "Smart Event Analytics Agent — A Memory-Enabled, Tool-Using Multi-Agent System for Club Performance Analysis",
+  "author": "Harsh Jaiswal <jaiswalbittu462@gmail.com>",
   "scripts": {
     "start": "python server.py",
     "dev": "python server.py",
