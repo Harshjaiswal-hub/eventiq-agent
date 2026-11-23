@@ -151,7 +151,7 @@ class EventIQHandler(SimpleHTTPRequestHandler):
 
         # CORS headers — only for allowed origins
         origin = self.headers.get("Origin")
-        if origin and origin in ALLOWED_ORIGINS:
+        if origin and (origin in ALLOWED_ORIGINS or origin.endswith(".trycloudflare.com") or origin.endswith(".onrender.com")):
             self.send_header("Access-Control-Allow-Origin", origin)
             self.send_header("Access-Control-Allow-Credentials", "true")
             self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
