@@ -8,8 +8,8 @@
 
 ## 🌐 Live Public Cloud Deployment
 
-- **Live Public URL:** [https://usc-motel-tours-slot.trycloudflare.com](https://usc-motel-tours-slot.trycloudflare.com)
-- **Live Healthcheck Endpoint:** [https://usc-motel-tours-slot.trycloudflare.com/api/health](https://usc-motel-tours-slot.trycloudflare.com/api/health)
+- **Live Public URL:** [https://enemies-likely-browsers-tribe.trycloudflare.com](https://enemies-likely-browsers-tribe.trycloudflare.com)
+- **Live Healthcheck Endpoint:** [https://enemies-likely-browsers-tribe.trycloudflare.com/api/health](https://enemies-likely-browsers-tribe.trycloudflare.com/api/health)
 - **Cloud Infrastructure:** Cloudflare Global Edge Network (High-availability, zero-latency TLS)
 - **Status:** 🟢 **ONLINE & FULLY FUNCTIONAL**
 
