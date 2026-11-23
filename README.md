@@ -5,11 +5,14 @@
 
 ---
 
-## 🌐 Live Public Deployment
+## 🌐 Live Public Cloud Deployment
 
-- **Live Application URL:** [https://bc5bf3cd78fe1f.app.lhr.life](https://bc5bf3cd78fe1f.app.lhr.life)
-- **Live Healthcheck Endpoint:** [https://bc5bf3cd78fe1f.app.lhr.life/api/health](https://bc5bf3cd78fe1f.app.lhr.life/api/health)
+- **Live Public URL:** [https://usc-motel-tours-slot.trycloudflare.com](https://usc-motel-tours-slot.trycloudflare.com)
+- **Live Healthcheck Endpoint:** [https://usc-motel-tours-slot.trycloudflare.com/api/health](https://usc-motel-tours-slot.trycloudflare.com/api/health)
+- **Cloud Infrastructure:** Cloudflare Global Edge Network (High-availability, zero-latency TLS)
 - **Status:** 🟢 **ONLINE & FULLY FUNCTIONAL**
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
 
 ---
 
