@@ -251,11 +251,23 @@ document.addEventListener('click', (e) => {
   const genReportBtn = e.target.closest('#generate-save-report-btn');
   if (genReportBtn) generateAndSaveReport();
 
+  // Mobile Menu & Backdrop Triggers
+  const mobileMenuBtn = e.target.closest('#mobile-menu-btn');
+  if (mobileMenuBtn) toggleMobileSidebar();
+  const sidebarBackdrop = e.target.closest('#sidebar-backdrop');
+  if (sidebarBackdrop) closeMobileSidebar();
+
+  // Google Sign-In Triggers
+  const googleLoginBtn = e.target.closest('#google-login-btn');
+  if (googleLoginBtn) handleGoogleLogin();
+  const googleChip = e.target.closest('[data-google-email]');
+  if (googleChip) handleGoogleLogin(googleChip.dataset.googleEmail, googleChip.dataset.googleRole);
+
   // Authentication UI triggers
   const authBtn = e.target.closest('#auth-btn');
   if (authBtn) {
     if (currentUser) {
-      if (confirm(`Sign out from EventIQ (${currentUser.username})?`)) handleLogout();
+      if (confirm(`Sign out from EventIQ (${currentUser.name || currentUser.username})?`)) handleLogout();
     } else {
       openLoginModal();
     }
@@ -334,10 +346,67 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+function toggleMobileSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  if (sidebar) sidebar.classList.toggle('mobile-open');
+  if (backdrop) backdrop.classList.toggle('active');
+}
+
+function closeMobileSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  if (sidebar) sidebar.classList.remove('mobile-open');
+  if (backdrop) backdrop.classList.remove('active');
+}
+
+async function handleGoogleLogin(email, role) {
+  const errEl = document.getElementById('login-error');
+  if (errEl) errEl.style.display = 'none';
+
+  try {
+    const payload = {};
+    if (email) payload.email = email;
+    if (role) payload.role = role;
+
+    const res = await fetch('/api/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (res.ok && data.status === 'success') {
+      currentUser = data.user;
+      currentCsrfToken = data.csrf_token;
+      closeLoginModal();
+      updateAuthUI();
+      showToast(`Signed in with Google as ${currentUser.name || currentUser.username} (${currentUser.role})`);
+      refreshApprovalsBadge();
+      if (currentView === 'approvals') renderApprovalsView();
+    } else {
+      if (errEl) {
+        errEl.textContent = data.message || 'Google sign-in failed';
+        errEl.style.display = 'block';
+      }
+    }
+  } catch (err) {
+    if (errEl) {
+      errEl.textContent = 'Server connection failed';
+      errEl.style.display = 'block';
+    }
+  }
+}
+
 function switchView(view) {
   currentView = view;
-  document.querySelectorAll('[data-nav]').forEach(b => b.classList.remove('active'));
-  document.querySelector(`[data-nav="${view}"]`)?.classList.add('active');
+  closeMobileSidebar();
+  document.querySelectorAll('[data-nav]').forEach(b => {
+    if (b.dataset.nav === view) {
+      b.classList.add('active');
+    } else {
+      b.classList.remove('active');
+    }
+  });
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById(`view-${view}`)?.classList.add('active');
   if (view === 'dashboard') renderDashboard();
@@ -1145,7 +1214,7 @@ let currentRecFilter = 'all';
 
 async function refreshApprovalsBadge() {
   const badge = document.getElementById('approvals-badge');
-  if (!badge) return;
+  const mobBadge = document.getElementById('mobile-approvals-badge');
   try {
     const res = await fetch('/api/recommendations');
     if (res.ok) {
@@ -1153,10 +1222,17 @@ async function refreshApprovalsBadge() {
       const recs = data.recommendations || [];
       const pendingCount = recs.filter(r => r.status === 'pending').length;
       if (pendingCount > 0) {
-        badge.textContent = pendingCount;
-        badge.style.display = 'inline-block';
+        if (badge) {
+          badge.textContent = pendingCount;
+          badge.style.display = 'inline-block';
+        }
+        if (mobBadge) {
+          mobBadge.textContent = pendingCount;
+          mobBadge.style.display = 'inline-block';
+        }
       } else {
-        badge.style.display = 'none';
+        if (badge) badge.style.display = 'none';
+        if (mobBadge) mobBadge.style.display = 'none';
       }
     }
   } catch (err) {

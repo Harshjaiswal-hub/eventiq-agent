@@ -63,3 +63,5 @@ backups/
 *.bak
 *.backup
 eventiq_test_restore.db
+
+cloudflared.exe
