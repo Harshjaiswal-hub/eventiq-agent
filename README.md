@@ -8,10 +8,11 @@
 
 ## 🌐 Live Public Cloud Deployment
 
-- **Live Public URL:** [https://enemies-likely-browsers-tribe.trycloudflare.com](https://enemies-likely-browsers-tribe.trycloudflare.com)
-- **Live Healthcheck Endpoint:** [https://enemies-likely-browsers-tribe.trycloudflare.com/api/health](https://enemies-likely-browsers-tribe.trycloudflare.com/api/health)
-- **Cloud Infrastructure:** Cloudflare Global Edge Network (High-availability, zero-latency TLS)
-- **Status:** 🟢 **ONLINE & FULLY FUNCTIONAL**
+- **Official Live Website (Render 24/7 Cloud):** [https://eventiq-agent.onrender.com](https://eventiq-agent.onrender.com)
+- **Live Healthcheck Endpoint:** [https://eventiq-agent.onrender.com/api/health](https://eventiq-agent.onrender.com/api/health)
+- **Edge Deployment (Cloudflare):** [https://enemies-likely-browsers-tribe.trycloudflare.com](https://enemies-likely-browsers-tribe.trycloudflare.com)
+- **Cloud Infrastructure:** Render Web Services & Cloudflare Global Edge Network (High-availability, zero-latency TLS)
+- **Status:** 🟢 **ONLINE & FULLY FUNCTIONAL (24/7)**
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Harshjaiswal-hub/eventiq-agent)
 

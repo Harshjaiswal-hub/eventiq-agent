@@ -110,7 +110,18 @@ analytics.yourcompany.com {
 
 ---
 
-## 5. Running as a Background System Service
+## 6. Cloud Deployment (Render & Cloudflare)
+
+### Live Production Deployment
+- **Official Production URL:** [https://eventiq-agent.onrender.com](https://eventiq-agent.onrender.com)
+- **Healthcheck:** [https://eventiq-agent.onrender.com/api/health](https://eventiq-agent.onrender.com/api/health)
+- **Deployment Platform:** Render (Free Web Service via `render.yaml`)
+
+### Deploying to Render via Blueprint
+1. Connect your GitHub repository (`Harshjaiswal-hub/eventiq-agent`) to Render.
+2. Select **Blueprint** and point to `render.yaml`.
+3. Set the service name to `eventiq-agent` and deploy.
+4. Auto-deploy triggers automatically whenever new commits are pushed to the `main` branch.
 
 ### Linux Systemd Service (`/etc/systemd/system/eventiq.service`)
 ```ini
